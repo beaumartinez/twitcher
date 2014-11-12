@@ -1,5 +1,12 @@
 #! /usr/bin/env python
 
+# 1. Create a Twitter app (https://dev.twitter.com/apps).
+# 2. Enable write acccess.
+# 3. Request your access token and secret.
+#
+# Usage:
+# ./twitcher.py <twitch_username> <twitter_consumer_key> <twitter_consumer_secret> <twitter_access_token> <twitter_access_secret>
+
 from sys import argv
 from cStringIO import StringIO
 
@@ -8,16 +15,15 @@ import tweepy
 
 
 user = argv[1]
-consumer_secret = argv[2]
-access_token = argv[3]
-access_secret = argv[4]
+consumer_key = argv[2]
+consumer_secret = argv[3]
+access_token = argv[4]
+access_secret = argv[5]
 
-
-auth = tweepy.OAuthHandler('ng9AuEDKLEsnhOxqRdtfLBgta', consumer_secret)
+auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_secret)
 
 twitter = tweepy.API(auth)
-
 
 stream_data = requests.get('https://api.twitch.tv/kraken/streams/{}'.format(user))
 stream = stream_data.json()
