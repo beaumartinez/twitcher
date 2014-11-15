@@ -11,3 +11,9 @@ Post a screenshot of your Twitch stream to Twitter.
 ## Usage
 
     ./twitcher.py <twitch_username> <twitter_consumer_key> <twitter_consumer_secret> <twitter_access_token> <twitter_access_secret>
+
+If the stream is live, it'll post a screenshot.
+
+For full usage you can run—
+
+	./twitcher.py --help
