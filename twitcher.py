@@ -1,47 +1,93 @@
 #! /usr/bin/env python
 
-from sys import argv
+from argparse import ArgumentParser
 from cStringIO import StringIO
 
 import requests
 import tweepy
 
 
-user = argv[1]
-consumer_key = argv[2]
-consumer_secret = argv[3]
-access_token = argv[4]
-access_secret = argv[5]
+def get_args():
+    parser = ArgumentParser(description='Post a screenshot of your Twitch stream to Twitter.')
+    parser.add_argument('user', help='Twitch username')
+    parser.add_argument('consumer_key', help='Twitter API consumer key')
+    parser.add_argument('consumer_secret', help='Twitter API consumer secret')
+    parser.add_argument('access_token', help='Twitter API access token')
+    parser.add_argument('access_secret', help='Twitter API consumer access secret')
 
-auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-auth.set_access_token(access_token, access_secret)
+    args = parser.parse_args()
 
-twitter = tweepy.API(auth)
+    return args
 
-stream_data = requests.get('https://api.twitch.tv/kraken/streams/{}'.format(user))
-stream = stream_data.json()
-stream = stream['stream']
 
-if stream:
+def _twitter_api(args):
+    auth = tweepy.OAuthHandler(args.consumer_key, args.consumer_secret)
+    auth.set_access_token(args.access_token, args.access_secret)
+
+    twitter = tweepy.API(auth)
+
+    return twitter
+
+
+def _get_stream(user):
+    stream_data = requests.get('https://api.twitch.tv/kraken/streams/{}'.format(user))
+    stream = stream_data.json()
+    stream = stream['stream']
+
+    return stream
+
+
+def _parse_status(stream):
+    status = stream['channel']['status']
+    status = status.strip()
+    status = status.encode('utf-8')
+
+    return status
+
+
+def _parse_game(stream):
+    game = stream['game']
+    game = game.strip()
+    game = game.encode('utf-8')
+
+    return game
+
+
+def _get_image(stream):
     image_url = stream['preview']['large']
     image_url = image_url.replace('640x360', '1280x720')
     image_file = requests.get(image_url)
     image_file = StringIO(image_file.content)
 
-    name = stream['channel']['status']
-    name = name.strip()
-    name = name.encode('utf-8')
+    return image_url, image_file
 
-    game = stream['game']
-    game = game.encode('utf-8')
 
+def _parse_url(stream):
     url = stream['channel']['url']
-    created_at = stream['created_at']
 
-    tweet_content = '{} on Twitch (streaming {}) {}'.format(name, game, url)
+    return url
 
-    print tweet_content, image_url
 
-    tweet_response = twitter.update_with_media('{}.jpg'.format(user), tweet_content, file=image_file)
-else:
-    print 'Offline'
+def post_tweet(args):
+    stream = _get_stream(args.user)
+
+    if stream:
+        status = _parse_status(stream)
+        game = _parse_game(stream)
+        url = _parse_url(stream)
+
+        tweet_content = '{} on Twitch (streaming {}) {}'.format(status, game, url)
+
+        image_url, image_file = _get_image(stream)
+
+        print tweet_content, image_url
+
+        twitter = _twitter_api(args)
+        twitter.update_with_media('{}.jpg'.format(args.user), tweet_content, file=image_file)
+    else:
+        print 'Offline'
+
+
+if __name__ == '__main__':
+    args = get_args()
+    post_tweet(args)
