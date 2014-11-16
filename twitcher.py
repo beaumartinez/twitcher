@@ -76,7 +76,7 @@ def post_tweet(args):
         game = _parse_game(stream)
         url = _parse_url(stream)
 
-        tweet_content = '{} on Twitch (streaming {}) {}'.format(status, game, url)
+        tweet_content = '{} live on Twitch (streaming {}) {}'.format(status, game, url)
 
         image_url, image_file = _get_image(stream)
 
