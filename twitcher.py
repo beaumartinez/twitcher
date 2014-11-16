@@ -55,7 +55,7 @@ def _parse_game(stream):
 
 def _get_image(stream):
     image_url = stream['preview']['large']
-    image_url = image_url.replace('640x360', '1280x720')
+    image_url = image_url.replace('640x360', '1920x1080')
     image_file = requests.get(image_url)
     image_file = StringIO(image_file.content)
 
