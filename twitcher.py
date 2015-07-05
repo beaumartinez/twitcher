@@ -7,6 +7,10 @@ import requests
 import tweepy
 
 
+# 140 chars - (1 space, 22 for the link, 1 space, 22 for the image) = 94 chars
+TWEET_LIMIT = 94
+
+
 def get_args():
     parser = ArgumentParser(description='Post a screenshot of your Twitch stream to Twitter.')
     parser.add_argument('user', help='Twitch username')
@@ -77,6 +81,14 @@ def post_tweet(args):
         url = _parse_url(stream)
 
         tweet_content = '{} live on Twitch (streaming {}) {}'.format(status, game, url)
+
+        if len(tweet_content) > TWEET_LIMIT:
+            print 'Long tweet. Trimming'
+            tweet_content = '{} streaming {} on Twitch {}'.format(status, game, url)
+
+            if len(tweet_content) > TWEET_LIMIT:
+                print 'Still a long tweet. Trimming'
+                tweet_content = '{} on Twitch {}'.format(status, url)
 
         image_url, image_file = _get_image(stream)
 
